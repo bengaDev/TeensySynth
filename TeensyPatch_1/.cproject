@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?fileVersion 4.0.0?><cproject storage_type_id="org.eclipse.cdt.core.XmlProjectDescriptionStorage">
+	<storageModule moduleId="org.eclipse.cdt.core.settings">
+		<cconfiguration id="io.sloeber.core.toolChain.release.742738473">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="io.sloeber.core.toolChain.release.742738473" moduleId="org.eclipse.cdt.core.settings" name="Release">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="io.sloeber.core.toolChain.release.742738473" name="Release" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="io.sloeber.core.toolChain.release.742738473.93214654" name="/" resourcePath="">
+						<toolChain id="io.sloeber.core.toolChain.release.1734652897" name="Arduino Toolchain (edizione Sloeber)" superClass="io.sloeber.core.toolChain.release">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="io.sloeber.targetplatform.450659779" name="Arduino di riferimento" osList="all" superClass="io.sloeber.targetplatform"/>
+							<builder buildPath="${workspace_loc:/TeensyPatch_1}/Release" id="io.sloeber.sketch.builder.277141238" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Generatore di sketch Arduino" superClass="io.sloeber.sketch.builder"/>
+							<tool id="io.sloeber.tool.sketch.compiler.cpp.1316072662" name="Compilatore Arduino C++" superClass="io.sloeber.tool.sketch.compiler.cpp">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.cpp.sketch.option.incpath.338321245" name="Cartelle incluse (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/MIDI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SerialFlash}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.cpp.sketch.input.1035079178" name="Sorgente CPP" superClass="io.sloeber.compiler.cpp.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.compiler.c.424840374" name="Compilatore Arduino C" superClass="io.sloeber.tool.compiler.c">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.c.sketch.option.incpath.549796814" name="Cartelle incluse (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/MIDI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SerialFlash}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.c.sketch.input.1947905012" name="Sorgente C" superClass="io.sloeber.compiler.c.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.sketch.compiler.s.1078274678" name="Compilatore codice macchina Arduino" superClass="io.sloeber.tool.sketch.compiler.s">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.asm.sketch.option.incpath.2010217476" name="Cartelle incluse (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/MIDI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SerialFlash}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.S.sketch.input.135526895" name="Sorgente Assembly" superClass="io.sloeber.compiler.S.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.ar.1652102421" name="Archiviatore Arduino" superClass="io.sloeber.tool.ar"/>
+							<tool id="io.sloeber.tool.combine.495614078" name="Combiner Arduino" superClass="io.sloeber.tool.combine"/>
+							<tool id="io.sloeber.tool.objcopy.eep.2095399968" name="objcopy Arduino" superClass="io.sloeber.tool.objcopy.eep"/>
+							<tool id="io.sloeber.tool.size.1701867462" name="Generatore report dimensioni Arduino" superClass="io.sloeber.tool.size"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="libraries/SerialFlash/util|libraries/SerialFlash/docs|libraries/SerialFlash/doc|libraries/Audio/gui|libraries/Audio/docs|libraries/MIDI/res|libraries/MIDI/external|libraries/MIDI/doc|libraries/MIDI/builder|libraries/?*/**/?xamples/**|libraries/?*/**/?xtras/**|libraries/?*/**/test*/**|libraries/?*/**/third-party/**|libraries/**/._*|libraries/?*/utility/*/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+		<cconfiguration id="io.sloeber.core.toolChain.release.742738473.1426660368">
+			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="io.sloeber.core.toolChain.release.742738473.1426660368" moduleId="org.eclipse.cdt.core.settings" name="hardware_debug">
+				<externalSettings/>
+				<extensions>
+					<extension id="org.eclipse.cdt.core.ELF" point="org.eclipse.cdt.core.BinaryParser"/>
+					<extension id="org.eclipse.cdt.core.GLDErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.MakeErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+					<extension id="org.eclipse.cdt.core.GCCErrorParser" point="org.eclipse.cdt.core.ErrorParser"/>
+				</extensions>
+			</storageModule>
+			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="io.sloeber.core.toolChain.release.742738473.1426660368" name="hardware_debug" parent="org.eclipse.cdt.build.core.emptycfg">
+					<folderInfo id="io.sloeber.core.toolChain.release.742738473.1426660368." name="/" resourcePath="">
+						<toolChain id="io.sloeber.core.toolChain.release.62644664" name="Arduino Toolchain (edizione Sloeber)" superClass="io.sloeber.core.toolChain.release">
+							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="io.sloeber.targetplatform.2042455116" name="Arduino di riferimento" osList="all" superClass="io.sloeber.targetplatform"/>
+							<builder buildPath="${workspace_loc:/TeensyPatch_1}/Release" id="io.sloeber.sketch.builder.1458406862" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Generatore di sketch Arduino" superClass="io.sloeber.sketch.builder"/>
+							<tool id="io.sloeber.tool.sketch.compiler.cpp.1833213090" name="Compilatore Arduino C++" superClass="io.sloeber.tool.sketch.compiler.cpp">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.cpp.sketch.option.incpath.63956312" name="Cartelle incluse (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/MIDI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SerialFlash}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.cpp.sketch.input.143959914" name="Sorgente CPP" superClass="io.sloeber.compiler.cpp.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.compiler.c.1692682265" name="Compilatore Arduino C" superClass="io.sloeber.tool.compiler.c">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.c.sketch.option.incpath.984693286" name="Cartelle incluse (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/MIDI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SerialFlash}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.c.sketch.input.1927606920" name="Sorgente C" superClass="io.sloeber.compiler.c.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.sketch.compiler.s.1197883870" name="Compilatore codice macchina Arduino" superClass="io.sloeber.tool.sketch.compiler.s">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.asm.sketch.option.incpath.849957144" name="Cartelle incluse (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/core/core}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/MIDI/src}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Audio}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SD}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SerialFlash}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/SPI}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire/utility}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/TeensyPatch_1/libraries/Wire}&quot;"/>
+								</option>
+								<inputType id="io.sloeber.compiler.S.sketch.input.836125292" name="Sorgente Assembly" superClass="io.sloeber.compiler.S.sketch.input"/>
+							</tool>
+							<tool id="io.sloeber.tool.ar.873766427" name="Archiviatore Arduino" superClass="io.sloeber.tool.ar"/>
+							<tool id="io.sloeber.tool.combine.1569732295" name="Combiner Arduino" superClass="io.sloeber.tool.combine"/>
+							<tool id="io.sloeber.tool.objcopy.eep.405445943" name="objcopy Arduino" superClass="io.sloeber.tool.objcopy.eep"/>
+							<tool id="io.sloeber.tool.size.1837237635" name="Generatore report dimensioni Arduino" superClass="io.sloeber.tool.size"/>
+						</toolChain>
+					</folderInfo>
+					<sourceEntries>
+						<entry excluding="libraries/SerialFlash/util|libraries/SerialFlash/docs|libraries/SerialFlash/doc|libraries/Audio/gui|libraries/Audio/docs|libraries/MIDI/res|libraries/MIDI/external|libraries/MIDI/doc|libraries/MIDI/builder|libraries/?*/**/?xamples/**|libraries/?*/**/?xtras/**|libraries/?*/**/test*/**|libraries/?*/**/third-party/**|libraries/**/._*|libraries/?*/utility/*/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
+					</sourceEntries>
+				</configuration>
+			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
+		</cconfiguration>
+	</storageModule>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="TeensyPatch_1.null.1203715363" name="TeensyPatch_1"/>
+	</storageModule>
+	<storageModule moduleId="scannerConfiguration">
+		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="hardware_debug">
+			<resource resourceType="PROJECT" workspacePath="/TeensyPatch_1"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/TeensyPatch_1"/>
+		</configuration>
+	</storageModule>
+</cproject>
