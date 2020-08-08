@@ -172,32 +172,33 @@ void StateMachine::updateStepLed(int stepNum, bool *isStepOn)
 
 void StateMachine::manageTimeEnvelope(Fader_t fader, byte MIDIVal)
 {
+	float envVal;
+
 	switch(fader)
 	{
 		case ENV_DELAY:
-			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
-			oscillator[currentOscil]->setDelay(MIDIVal);
+			envVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setDelay(envVal);
 			break;
 		case ENV_ATTACK:
-			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
-			print
-			oscillator[currentOscil]->setAttack(MIDIVal);
+			envVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setAttack(envVal);
 			break;
 		case ENV_HOLD:
-			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
-			oscillator[currentOscil]->setHold(MIDIVal);
+			envVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setHold(envVal);
 			break;
 		case ENV_DECAY:
-			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
-			oscillator[currentOscil]->setDecay(MIDIVal);
+			envVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setDecay(envVal);
 			break;
 		case ENV_SUSTAIN:
-			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 10000.0);
-			oscillator[currentOscil]->setSustain(MIDIVal, -1.0);
+			envVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 10000.0);
+			oscillator[currentOscil]->setSustain(envVal, -1.0);
 			break;
 		case ENV_RELEASE:
-			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
-			oscillator[currentOscil]->setRelease(MIDIVal);
+			envVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setRelease(envVal);
 			break;
 	}
 }
@@ -422,5 +423,5 @@ float myMap(float num, float startScale_IN, float endScale_IN, float startScale_
 	// num : (endIN - startIN) = x : (endOUT - startOUT)
 	float noOffsetOutput = (num * (endScale_OUT - startScale_OUT)) / (endScale_IN - startScale_IN);
 
-	return startScale_OUT + noOffsetOutput;
+	return (startScale_OUT + noOffsetOutput);
 }
