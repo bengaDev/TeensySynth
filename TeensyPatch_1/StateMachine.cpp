@@ -7,17 +7,71 @@
 
 #include "StateMachine.h"
 
-StateMachine::StateMachine(SequenceOsc *oscils, int numOscils) {
+#define NUM_WAVES	3
+#define VOLUME		0.1
+#define BPM			60.0
+#define SUSTAIN 	100 //ms
+#define BPM_DIV		4
+#define NUM_STEPS	16
+#define NUM_OSCILS	2
+
+float BPM_ClkFreq = ((BPM * BPM_DIV) / 60.0);
+float BPM_ClkPeriod = (1 / (BPM_ClkFreq)) * 1000.0; // In 'ms'
+
+float knob_A4, knob_A5, cutoffFreq;
+
+unsigned long last_time;
+// MIXERS SECTIONS
+AudioMixer4     mixer1, mixer2;
+
+
+// AUDIO SYNTHESIS COMPONENT
+AudioSynthSimpleDrum drum1, drum2;
+
+SequenceOsc oscil[NUM_OSCILS] = {
+		SequenceOsc(0.1, 400),
+		SequenceOsc(0.1, 400)
+};
+
+
+AudioFilterStateVariable filter1;
+AudioAmplifier mainVolume;
+
+AudioConnection patchCord0(oscil[0].envelope, 0, mixer1, 0);
+AudioConnection patchCord1(oscil[1].envelope, 0, mixer1, 1);
+AudioConnection patchCord2(drum1, 0, mixer2, 0);
+AudioConnection patchCord6(drum2, 0, mixer2, 1);
+AudioConnection patchCord3(mixer1, 0, filter1, 0);
+AudioConnection patchCord4(mixer1, 0, filter1, 1);
+AudioConnection patchCord5(filter1, 0, mixer2, 3);
+
+// Now create 2 mixers for the main output
+AudioMixer4     mixerLeft;
+AudioMixer4     mixerRight;
+AudioOutputI2S  audioOut;
+
+// Mix all channels to both the outputs
+AudioConnection patchCord33(mixer2, 0, mainVolume, 0);
+AudioConnection patchCOrd34(mainVolume, 0, mixerLeft, 0);
+AudioConnection patchCord37(mainVolume, 0, mixerRight, 0);
+AudioConnection patchCord41(mixerLeft, 0, audioOut, 0);
+AudioConnection patchCord42(mixerRight, 0, audioOut, 1);
+
+
+float myMap(float num, float startScale_IN, float endScale_IN, float startScale_OUT, float endScale_OUT);
+
+StateMachine::StateMachine() {
 	// TODO Auto-generated constructor stub
-	this->numOscils = numOscils;
+	this->numOscils = NUM_OSCILS;
 
 	oscillator = (SequenceOsc**)malloc(numOscils * sizeof(SequenceOsc*));
 
 	for(int i = 0; i < numOscils; i++)
 	{
-		oscillator[i] = &(oscils[i]);
+		oscillator[i] = &(oscil[i]);
 	}
 
+	step = 0;
 
 	currentMode = INIT_MODE;
 
@@ -31,13 +85,76 @@ StateMachine::~StateMachine() {
 
 void StateMachine::updateStateMachine()
 {
+	/*******************************************************/
+	// MIDI Command Parser - [Clock frequency]
 	if(usbMIDI.read())
 		processMidiCommand();
 
+
+	bool noteChange = false;
+
+
+	/*******************************************************/
+	// Oscillator Envelope Update
+	for(int i = 0; i < NUM_OSCILS; i++)
+		oscil[i].UpdateState();
+
+
+
+	/*******************************************************/
+	// Step Sequencer Processor - [BPM based frequency]
+	if(isClkTick())
+	{
+		manageStep(step);
+		step = (step + 1) % STEP_NUMBER;
+	}
+
+
+	/*******************************************************/
+	// Analog Processing
+	knob_A5 = (float)analogRead(A5) / 1023.0;
+	knob_A4 = (float)analogRead(A4) / 1023.0;
+
+	cutoffFreq = knob_A4;
+
+	//Serial.println(knob_A3);
+	cutoffFreq = (cutoffFreq * cutoffFreq);
+	cutoffFreq = myMap(cutoffFreq, 0.0, 1.0, 20.0, 10000.0);
+
+	filter1.frequency(cutoffFreq);
 	return;
 }
 
-void StateMachine::updateStep(int stepNum, bool *isStepOn)
+bool StateMachine::isClkTick()
+{
+	if( (millis() - last_time) >= (unsigned long)(BPM_ClkPeriod))
+	{
+		last_time = millis();
+		return true;
+	}
+	return false;
+}
+
+void StateMachine::manageStep(int stepNumber)
+{
+	bool isStepOn[NUM_OSCILS] = {false};
+
+	for(int oscilN = 0; oscilN < NUM_OSCILS; oscilN++)
+	{
+		if(oscil[oscilN].sequence.isStep_On(stepNumber))
+		{
+			oscil[oscilN].notePlay();
+			isStepOn[oscilN] = true;
+		}
+	}
+
+	updateStepLed(stepNumber, isStepOn);
+
+	//AkaiMidi.blinkStep(stepNumber, color);
+	return;
+}
+
+void StateMachine::updateStepLed(int stepNum, bool *isStepOn)
 {
 	int prevColor = OFF;
 	int prevStep = (stepNum == 0 ? (STEP_NUMBER - 1) : (stepNum - 1));
@@ -51,6 +168,38 @@ void StateMachine::updateStep(int stepNum, bool *isStepOn)
 		AkaiMidi.blinkStep(stepNum, RED, prevColor);
 	else
 		AkaiMidi.blinkStep(stepNum, YELLOW, prevColor);
+}
+
+void StateMachine::manageTimeEnvelope(Fader_t fader, byte MIDIVal)
+{
+	switch(fader)
+	{
+		case ENV_DELAY:
+			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setDelay(MIDIVal);
+			break;
+		case ENV_ATTACK:
+			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			print
+			oscillator[currentOscil]->setAttack(MIDIVal);
+			break;
+		case ENV_HOLD:
+			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setHold(MIDIVal);
+			break;
+		case ENV_DECAY:
+			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setDecay(MIDIVal);
+			break;
+		case ENV_SUSTAIN:
+			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 10000.0);
+			oscillator[currentOscil]->setSustain(MIDIVal, -1.0);
+			break;
+		case ENV_RELEASE:
+			MIDIVal = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1000.0);
+			oscillator[currentOscil]->setRelease(MIDIVal);
+			break;
+	}
 }
 
 void StateMachine::processMidiCommand()
@@ -102,19 +251,25 @@ void StateMachine::processMidiCommand()
 				  InitPanel();
 		  }
 	  }
-	  else if(type == usbMIDI.ControlChange)
+	  if(type == usbMIDI.ControlChange)
 	  {
 		  Fader_t faderType = AkaiMidi.getFaderType(data1);
+		  float volume;
 
 		  switch(faderType){
 		  	  case MAIN_VOLUME:
-
+		  		  volume = myMap((float)data2, 0.0, 127.0, 0.0, 0.5);
+		  		  mainVolume.gain(volume);
 		  		  break;
+		  	  case ENV_DELAY ... ENV_RELEASE:
+			  	  manageTimeEnvelope(faderType, data2);
+			  	  break;
 		  	  case NULL_FADER_FUNCTION:
 		  		  break;
 		  }
 	  }
 
+	  /*
 	  switch (type) {
 	      case usbMIDI.NoteOff: // 0x80
 	        Serial.print("Note Off, ch=");
@@ -230,11 +385,30 @@ void StateMachine::processMidiCommand()
 	      default:
 	        Serial.println("Opps, an unknown MIDI message type!");
 	    }
+	  */
 }
 
 void StateMachine::InitProcessingComponents()
 {
+	mainVolume.gain(0.2);
 
+	oscil[0].setDAHDSR(0.0, 5.0, 2.1, 31.4, 200, 0.6, 200.0);
+	oscil[0].setAmplitude(1.0);
+	oscil[0].setNote(C_2);
+	oscil[0].setWaveformType(WAVEFORM_SAWTOOTH);
+
+	oscil[1].setDAHDSR(0.0, 50.2, 2.1, 31.4, 50, 0.6, 84.5);
+	oscil[1].setAmplitude(1.0);
+	oscil[1].setNote(E_2);
+	oscil[1].setWaveformType(WAVEFORM_SAWTOOTH);
+
+	drum1.frequency(70);
+	drum1.length(70);
+
+	drum2.frequency(500);
+	drum2.length(30);
+
+	filter1.frequency(400);
 }
 
 void StateMachine::InitPanel()
@@ -242,4 +416,11 @@ void StateMachine::InitPanel()
 	InitProcessingComponents();
 	AkaiMidi.drawInitPanel(numOscils);
 	currentMode = OSCIL_SELECTION_MODE;
+}
+
+float myMap(float num, float startScale_IN, float endScale_IN, float startScale_OUT, float endScale_OUT){
+	// num : (endIN - startIN) = x : (endOUT - startOUT)
+	float noOffsetOutput = (num * (endScale_OUT - startScale_OUT)) / (endScale_IN - startScale_IN);
+
+	return startScale_OUT + noOffsetOutput;
 }

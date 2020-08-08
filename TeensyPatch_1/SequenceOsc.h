@@ -36,6 +36,12 @@ public:
 
 	// Envelope Settings
 	void setDAHDSR(float, float, float, float, unsigned long, float, float);
+	void setDelay(float);
+	void setAttack(float);
+	void setHold(float);
+	void setDecay(float);
+	void setSustain(float, float);
+	void setRelease(float);
 
 private:
 	bool isSustainEnd();

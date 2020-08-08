@@ -14,7 +14,7 @@
 //usb_midi_class usbMIDI;
 
 //MIDI_CREATE_DEFAULT_INSTANCE();
-
+/*
 #define NUM_WAVES	3
 #define VOLUME		0.1
 #define BPM			120.0
@@ -65,7 +65,9 @@ AudioConnection patchCOrd34(mainVolume, 0, mixerLeft, 0);
 AudioConnection patchCord37(mainVolume, 0, mixerRight, 0);
 AudioConnection patchCord41(mixerLeft, 0, audioOut, 0);
 AudioConnection patchCord42(mixerRight, 0, audioOut, 1);
+*/
 
+StateMachine benStateMachine;
 
 bool isSustainDone();
 bool isBPM();
@@ -89,7 +91,7 @@ void setup()
 	//AkaiMidi.drawMainPanel(colorMatrix);
 // Add your initialization code here
 	AudioMemory(18);
-
+	/*
 	mainVolume.gain(0.1);
 
 	oscil[0].setDAHDSR(0.0, 5.0, 2.1, 31.4, 200, 0.6, 200.0);
@@ -109,9 +111,8 @@ void setup()
 	drum2.length(30);
 
 	filter1.frequency(400);
+	*/
 	// Initialize processor and memory measurements
-
-	last_time = millis();
 
 
 	AudioProcessorUsageMaxReset();
@@ -125,6 +126,7 @@ int step = 0;
 // The loop function is called in an endless loop
 void loop()
 {
+	/*
 	if(isClkTick())
 	{
 		manageStep(step);
@@ -141,25 +143,22 @@ void loop()
 	cutoffFreq = map(cutoffFreq, 0.0, 1.0, 20.0, 10000.0);
 
 	filter1.frequency(cutoffFreq);
+	*/
 
-
+	/*
 	bool noteChange = false;
 
 	for(int i = 0; i < NUM_OSCILS; i++)
 		oscil[i].UpdateState();
+	*/
 
 	// Receive MIDI data
 	//manageMIDIMessage();
 
 	benStateMachine.updateStateMachine();
-
-	//note1.envelope.noteOn();
-	//delay(400);
-
-	if(noteChange == true)
-		currentNote = (currentNote + 1) % NUM_WAVES;
 }
 
+/*
 void manageStep(int stepNumber)
 {
 	bool isStepOn[NUM_OSCILS] = {false};
@@ -178,6 +177,7 @@ void manageStep(int stepNumber)
 	//AkaiMidi.blinkStep(stepNumber, color);
 	return;
 }
+*/
 
 void manageMIDIMessage()
 {
@@ -187,13 +187,16 @@ void manageMIDIMessage()
 }
 
 
+/*
 float map(float num, float startScale_IN, float endScale_IN, float startScale_OUT, float endScale_OUT){
 	// num : (endIN - startIN) = x : (endOUT - startOUT)
 	float noOffsetOutput = (num * (endScale_OUT - startScale_OUT)) / (endScale_IN - startScale_IN);
 
 	return startScale_OUT + noOffsetOutput;
 }
+*/
 
+/*
 bool isBPM()
 {
 	unsigned long diff = millis();
@@ -207,7 +210,9 @@ bool isBPM()
 
 	return false;
 }
+*/
 
+/*
 bool isClkTick()
 {
 	if( (millis() - last_time) >= (unsigned long)(BPM_ClkPeriod))
@@ -217,6 +222,7 @@ bool isClkTick()
 	}
 	return false;
 }
+*/
 /*
 bool isHalfBPM()
 {

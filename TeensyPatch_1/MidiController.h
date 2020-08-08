@@ -13,7 +13,9 @@
 
 enum {OFF = 0x00, GREEN = 0x01, RED = 0x03, YELLOW = 0x05};
 typedef enum {NOTHING = 0, OSCIL_SELECT = 1, STEP_SELECT = 2} Selection_t; // Selection Type
-typedef enum {NULL_FADER_FUNCTION, MAIN_VOLUME} Fader_t;
+typedef enum {NULL_FADER_FUNCTION, MAIN_VOLUME,
+	ENV_DELAY,	ENV_ATTACK,		ENV_HOLD,
+	ENV_DECAY, 	ENV_SUSTAIN,	ENV_RELEASE} Fader_t;
 
 class MidiController {
 private:

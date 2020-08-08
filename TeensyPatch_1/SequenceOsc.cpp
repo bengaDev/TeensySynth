@@ -59,6 +59,52 @@ void SequenceOsc::setDAHDSR(float delay, float attack, float hold, float decay,
 
 }
 
+void SequenceOsc::setDelay(float delay)
+{
+	delayMillis = delay;
+
+	envelope.delay(delayMillis);
+}
+
+void SequenceOsc::setAttack(float attack)
+{
+	attackMillis = attack;
+
+	envelope.attack(attackMillis);
+}
+
+void SequenceOsc::setHold(float hold)
+{
+	holdMillis = hold;
+
+	envelope.hold(holdMillis);
+}
+
+void SequenceOsc::setDecay(float decay)
+{
+	decayMillis = decay;
+
+	envelope.decay(decayMillis);
+}
+
+void SequenceOsc::setSustain(float sustainLvl, float sustainDur)
+{
+	sustainDuration = sustainDur;
+
+	if(sustainLvl >= 0)
+	{
+		sustainLevel = sustainLvl;
+		envelope.sustain(sustainLevel);
+	}
+}
+
+void SequenceOsc::setRelease(float release)
+{
+	releaseMillis = release;
+
+	envelope.release(releaseMillis);
+}
+
 void SequenceOsc::setAmplitude(float ampl)
 {
 	amplitude = ampl;

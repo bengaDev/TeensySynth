@@ -13,11 +13,12 @@
 
 class StateMachine {
 public:
-	StateMachine(SequenceOsc *oscils, int numOscils);
+	StateMachine();
 	virtual ~StateMachine();
 
 	void updateStateMachine();
-	void updateStep(int stepNum, bool *isStepOn);
+	void updateStepLed(int stepNum, bool *isStepOn);
+	void manageStep(int stepNumber);
 
 private:
 	SequenceOsc **oscillator;
@@ -28,9 +29,13 @@ private:
 	int currentMode;
 	int currentOscil;
 
+	int step;
+
 	void processMidiCommand();
 	void InitPanel();
 	void InitProcessingComponents();
+	bool isClkTick();
+	void manageTimeEnvelope(Fader_t, byte);
 };
 
 #endif /* STATEMACHINE_H_ */

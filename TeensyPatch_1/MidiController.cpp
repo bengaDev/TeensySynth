@@ -158,6 +158,8 @@ Fader_t MidiController::getFaderType(uint8_t note)
 
 	if(note == 56)
 		faderType = MAIN_VOLUME;
+	else if(note >= 48 && note <= 53)
+		faderType = (Fader_t)( (note - 46) & 0xFF); // From (ENV_DELAY = 2) to (ENV_RELEASE = 7)
 
 	return faderType;
 }
