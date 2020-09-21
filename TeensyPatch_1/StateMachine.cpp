@@ -9,11 +9,12 @@
 
 #define NUM_WAVES	3
 #define VOLUME		0.1
-#define BPM			60.0
+#define BPM			130.0
 #define SUSTAIN 	100 //ms
 #define BPM_DIV		4
 #define NUM_STEPS	16
 #define NUM_OSCILS	2
+#define NUM_DRUMS	2
 
 float BPM_ClkFreq = ((BPM * BPM_DIV) / 60.0);
 float BPM_ClkPeriod = (1 / (BPM_ClkFreq)) * 1000.0; // In 'ms'
@@ -33,14 +34,19 @@ SequenceOsc oscil[NUM_OSCILS] = {
 		SequenceOsc(0.1, 400)
 };
 
+SequenceDrum drums[NUM_DRUMS] = {
+		SequenceDrum(),
+		SequenceDrum()
+};
+
 
 AudioFilterStateVariable filter1;
 AudioAmplifier mainVolume;
 
 AudioConnection patchCord0(oscil[0].envelope, 0, mixer1, 0);
 AudioConnection patchCord1(oscil[1].envelope, 0, mixer1, 1);
-AudioConnection patchCord2(drum1, 0, mixer2, 0);
-AudioConnection patchCord6(drum2, 0, mixer2, 1);
+AudioConnection patchCord2(drums[0].drum, 0, mixer2, 0);
+AudioConnection patchCord6(drums[1].drum, 0, mixer2, 1);
 AudioConnection patchCord3(mixer1, 0, filter1, 0);
 AudioConnection patchCord4(mixer1, 0, filter1, 1);
 AudioConnection patchCord5(filter1, 0, mixer2, 3);
@@ -63,24 +69,32 @@ float myMap(float num, float startScale_IN, float endScale_IN, float startScale_
 StateMachine::StateMachine() {
 	// TODO Auto-generated constructor stub
 	this->numOscils = NUM_OSCILS;
+	this->numDrums = NUM_DRUMS;
 
 	oscillator = (SequenceOsc**)malloc(numOscils * sizeof(SequenceOsc*));
+	drum = (SequenceDrum**)malloc(numDrums * sizeof(SequenceDrum*));
 
 	for(int i = 0; i < numOscils; i++)
 	{
 		oscillator[i] = &(oscil[i]);
 	}
 
+	for(int i = 0; i < numDrums; i++)
+		drum[i] = &(drums[i]);
+
 	step = 0;
 
 	currentMode = INIT_MODE;
+	lastSelectionMode = OSCIL_SELECTION_MODE;
 
 	currentOscil = 0;
+	currentDrum = 0;
 }
 
 StateMachine::~StateMachine() {
 	// TODO Auto-generated destructor stub
 	free(oscillator);
+	free(drum);
 }
 
 void StateMachine::updateStateMachine()
@@ -91,13 +105,10 @@ void StateMachine::updateStateMachine()
 		processMidiCommand();
 
 
-	bool noteChange = false;
-
-
 	/*******************************************************/
 	// Oscillator Envelope Update
 	for(int i = 0; i < NUM_OSCILS; i++)
-		oscil[i].UpdateState();
+		oscillator[i]->UpdateState();
 
 
 
@@ -137,40 +148,61 @@ bool StateMachine::isClkTick()
 
 void StateMachine::manageStep(int stepNumber)
 {
-	bool isStepOn[NUM_OSCILS] = {false};
+	//bool isStepOn[NUM_OSCILS] = {false}; // TODO
 
 	for(int oscilN = 0; oscilN < NUM_OSCILS; oscilN++)
 	{
-		if(oscil[oscilN].sequence.isStep_On(stepNumber))
+		if(oscillator[oscilN]->sequence.isStep_On(stepNumber))
 		{
-			oscil[oscilN].notePlay();
-			isStepOn[oscilN] = true;
+			oscillator[oscilN]->notePlay();
+			//isStepOn[oscilN] = true; // TODO
 		}
 	}
 
-	updateStepLed(stepNumber, isStepOn);
+	for(int drumN = 0; drumN < NUM_DRUMS; drumN++)
+	{
+		if(drum[drumN]->sequence.isStep_On(stepNumber))
+			drum[drumN]->drumPlay();
+	}
+
+	updateStepLed(stepNumber/*, isStepOn*/);
 
 	//AkaiMidi.blinkStep(stepNumber, color);
 	return;
 }
 
-void StateMachine::updateStepLed(int stepNum, bool *isStepOn)
+void StateMachine::updateStepLed(int stepNum/*, bool *isStepOn*/) //TODO
 {
 	int prevColor = OFF;
 	int prevStep = (stepNum == 0 ? (STEP_NUMBER - 1) : (stepNum - 1));
 
-	if(oscillator[currentOscil]->sequence.isStep_On(prevStep))
+	if(lastSelectionMode == OSCIL_SELECTION_MODE)
 	{
-		prevColor = GREEN;
-	}
+		if(oscillator[currentOscil]->sequence.isStep_On(prevStep))
+		{
+			prevColor = GREEN;
+		}
 
-	if(isStepOn[currentOscil])
-		AkaiMidi.blinkStep(stepNum, RED, prevColor);
-	else
-		AkaiMidi.blinkStep(stepNum, YELLOW, prevColor);
+		if(oscillator[currentOscil]->sequence.isStep_On(stepNum)/*isStepOn[currentOscil]*/) //TODO
+			AkaiMidi.blinkStep(stepNum, RED, prevColor);
+		else
+			AkaiMidi.blinkStep(stepNum, YELLOW, prevColor);
+	}
+	else if(lastSelectionMode == DRUM_SELECTION_MODE)
+	{
+		if(drum[currentDrum]->sequence.isStep_On(prevStep))
+		{
+			prevColor = GREEN;
+		}
+
+		if(drum[currentDrum]->sequence.isStep_On(stepNum)/*isStepOn[currentOscil]*/) //TODO
+			AkaiMidi.blinkStep(stepNum, RED, prevColor);
+		else
+			AkaiMidi.blinkStep(stepNum, YELLOW, prevColor);
+	}
 }
 
-void StateMachine::manageTimeEnvelope(Fader_t fader, byte MIDIVal)
+void StateMachine::manageTimeEnvelope(FaderFunction_t fader, byte MIDIVal)
 {
 	float envVal;
 
@@ -203,6 +235,27 @@ void StateMachine::manageTimeEnvelope(Fader_t fader, byte MIDIVal)
 	}
 }
 
+void StateMachine::manageDrumParams(FaderFunction_t fader, byte MIDIVal)
+{
+	float drumParamFloat;
+
+	switch(fader)
+	{
+		case DRUM_FREQ:
+			drumParamFloat = ((MIDIVal * 0.555662323) * (MIDIVal * 0.555662323)) + 20.0;//myMap((float)MIDIVal, 0.0, 127.0, 20.0, 5000.0);
+			drum[currentDrum]->setFrequency(drumParamFloat);
+			break;
+		case DRUM_LENGTH:
+			drumParamFloat = myMap((float)MIDIVal, 0.0, 127.0, 20.0, 5000.0);
+			drum[currentDrum]->setLength(drumParamFloat);
+			break;
+		case DRUM_PITCH_MOD:
+			drumParamFloat = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 1.0);
+			drum[currentDrum]->setPitchMod(drumParamFloat);
+			break;
+	}
+}
+
 void StateMachine::processMidiCommand()
 {
 	  byte type, channel, data1, data2, cable;
@@ -223,21 +276,41 @@ void StateMachine::processMidiCommand()
 
 			  switch(selType){
 				  case OSCIL_SELECT:
+					  AkaiMidi.setDrumOnOff(currentDrum, false); // Turn off drum selection
 					  AkaiMidi.setOscilOnOff(currentOscil, false);
 					  currentOscil = AkaiMidi.getOscilIndex(data1);
 					  AkaiMidi.setOscilOnOff(currentOscil, true);
 					  currentMode = OSCIL_SELECTION_MODE;
+					  lastSelectionMode = OSCIL_SELECTION_MODE;
+					  break;
+				  case DRUM_SELECT:
+					  AkaiMidi.setOscilOnOff(currentOscil, false); // Turn off oscil selection
+					  AkaiMidi.setDrumOnOff(currentDrum, false);
+					  currentDrum = AkaiMidi.getDrumIndex(data1);
+					  AkaiMidi.setDrumOnOff(currentDrum, true);
+					  currentMode = DRUM_SELECTION_MODE;
+					  lastSelectionMode = DRUM_SELECTION_MODE;
 					  break;
 				  case STEP_SELECT:
 				  {
 					  int stepNum = AkaiMidi.getSequencerStep(data1);
-					  oscillator[currentOscil]->sequence.setSequenceStep(stepNum);
-					  Serial.print("STATE_MACHINE:");
-					  Serial.println(oscillator[currentOscil]->sequence.currentSequence);
-					  if(oscillator[currentOscil]->sequence.isStep_On(stepNum))
-						  AkaiMidi.setStepOnOff(data1, true);
-					  else
-						  AkaiMidi.setStepOnOff(data1, false);
+
+					  if(lastSelectionMode == OSCIL_SELECTION_MODE)
+					  {
+						  oscillator[currentOscil]->sequence.setSequenceStep(stepNum);
+						  if(oscillator[currentOscil]->sequence.isStep_On(stepNum))
+							  AkaiMidi.setStepOnOff(data1, true);
+						  else
+							  AkaiMidi.setStepOnOff(data1, false);
+					  }
+					  else if(lastSelectionMode == DRUM_SELECTION_MODE)
+					  {
+						  drum[currentDrum]->sequence.setSequenceStep(stepNum);
+						  if(drum[currentDrum]->sequence.isStep_On(stepNum))
+							  AkaiMidi.setStepOnOff(data1, true);
+						  else
+							  AkaiMidi.setStepOnOff(data1, false);
+					  }
 
 					  currentMode = SEQUENCER_MODE;
 					  break;
@@ -254,16 +327,22 @@ void StateMachine::processMidiCommand()
 	  }
 	  if(type == usbMIDI.ControlChange)
 	  {
-		  Fader_t faderType = AkaiMidi.getFaderType(data1);
+		  FaderIdx_t faderIdx = AkaiMidi.getFaderType(data1);
+
+		  FaderFunction_t faderFunction = (FaderFunction_t)translateFaderIdxToFunction(faderIdx);
+
 		  float volume;
 
-		  switch(faderType){
+		  switch(faderFunction){
 		  	  case MAIN_VOLUME:
 		  		  volume = myMap((float)data2, 0.0, 127.0, 0.0, 0.5);
 		  		  mainVolume.gain(volume);
 		  		  break;
 		  	  case ENV_DELAY ... ENV_RELEASE:
-			  	  manageTimeEnvelope(faderType, data2);
+			  	  manageTimeEnvelope(faderFunction, data2);
+			  	  break;
+		  	  case DRUM_FREQ ... DRUM_PITCH_MOD:
+			  	  manageDrumParams(faderFunction, data2);
 			  	  break;
 		  	  case NULL_FADER_FUNCTION:
 		  		  break;
@@ -389,19 +468,38 @@ void StateMachine::processMidiCommand()
 	  */
 }
 
+int StateMachine::translateFaderIdxToFunction(FaderIdx_t faderIdx)
+{
+	FaderFunction_t faderFunction = NULL_FADER_FUNCTION;
+
+	if(faderIdx == FADER_8)
+		faderFunction = MAIN_VOLUME;
+	else if(lastSelectionMode == OSCIL_SELECTION_MODE)
+	{
+		if(faderIdx >= FADER_0 && faderIdx <= FADER_5)
+			faderFunction = (FaderFunction_t)(faderIdx + 2); // Ex.:   FADER_0 (Idx=0) -> ENV_DELAY (Idx=2)
+	}
+	else if(lastSelectionMode == DRUM_SELECTION_MODE)
+	{
+		if(faderIdx >= FADER_0 && faderIdx <= FADER_2)
+			faderFunction = (FaderFunction_t)(faderIdx + 8); // Ex.:	FADER_0 (Idx=0) -> DRUM_FREQ (Idx=8)
+	}
+	return faderFunction;
+}
+
 void StateMachine::InitProcessingComponents()
 {
 	mainVolume.gain(0.2);
 
-	oscil[0].setDAHDSR(0.0, 5.0, 2.1, 31.4, 200, 0.6, 200.0);
-	oscil[0].setAmplitude(1.0);
-	oscil[0].setNote(C_2);
-	oscil[0].setWaveformType(WAVEFORM_SAWTOOTH);
+	oscillator[0]->setDAHDSR(0.0, 5.0, 2.1, 31.4, 200, 0.6, 200.0);
+	oscillator[0]->setAmplitude(1.0);
+	oscillator[0]->setNote(C_2);
+	oscillator[0]->setWaveformType(WAVEFORM_SAWTOOTH);
 
-	oscil[1].setDAHDSR(0.0, 50.2, 2.1, 31.4, 50, 0.6, 84.5);
-	oscil[1].setAmplitude(1.0);
-	oscil[1].setNote(E_2);
-	oscil[1].setWaveformType(WAVEFORM_SAWTOOTH);
+	oscillator[1]->setDAHDSR(0.0, 50.2, 2.1, 31.4, 50, 0.6, 84.5);
+	oscillator[1]->setAmplitude(1.0);
+	oscillator[1]->setNote(E_2);
+	oscillator[1]->setWaveformType(WAVEFORM_SAWTOOTH);
 
 	drum1.frequency(70);
 	drum1.length(70);
@@ -415,7 +513,7 @@ void StateMachine::InitProcessingComponents()
 void StateMachine::InitPanel()
 {
 	InitProcessingComponents();
-	AkaiMidi.drawInitPanel(numOscils);
+	AkaiMidi.drawInitPanel(numOscils, numDrums);
 	currentMode = OSCIL_SELECTION_MODE;
 }
 

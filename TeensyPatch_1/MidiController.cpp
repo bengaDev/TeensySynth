@@ -29,6 +29,7 @@ MidiController::MidiController() {
 	sequencerRow = 4;
 
 	numOscils = -1;
+	numDrums = -1;
 }
 
 MidiController::~MidiController() {
@@ -73,6 +74,8 @@ Selection_t MidiController::getSelectionType(uint8_t note)
 
 	if(note >= MidiLayout.mainPanelID[0][0] && note <= MidiLayout.mainPanelID[0][numOscils - 1])
 		selType = OSCIL_SELECT;
+	else if(note >= MidiLayout.mainPanelID[0][7 - numDrums + 1] && note <= MidiLayout.mainPanelID[0][7])
+		selType = DRUM_SELECT;
 	else if(note >= MidiLayout.mainPanelID[sequencerRow + (STEP_NUMBER / 8) - 1][0] && note <= MidiLayout.mainPanelID[sequencerRow][7])
 		selType = STEP_SELECT;
 /*
@@ -104,6 +107,19 @@ int MidiController::getOscilIndex(uint8_t note)
 	return oscilIndex;
 }
 
+int MidiController::getDrumIndex(uint8_t note)
+{
+	int drumIndex = -1;
+
+	for(int drumN = 0; drumN < numDrums; drumN++)
+	{
+		if(note == MidiLayout.mainPanelID[0][7 - numDrums + drumN + 1])
+			drumIndex = drumN;
+	}
+
+	return drumIndex;
+}
+
 int MidiController::getSequencerStep(uint8_t note)
 {
 	int stepNum = -1;
@@ -120,20 +136,20 @@ int MidiController::getSequencerStep(uint8_t note)
 	return (stepNum % STEP_NUMBER);
 }
 
-void MidiController::drawInitPanel(int numOscils)
+void MidiController::drawInitPanel(int numOscils, int numDrums)
 {
 	this->numOscils = numOscils;
+	this->numDrums = numDrums;
 
 	for(int oscilN = 0; oscilN < numOscils; oscilN++)
-	{
-		if(oscilN == 0)
-			usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][oscilN], GREEN, 0);
-
 		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][oscilN], YELLOW, 0);
-	}
-	usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][0], GREEN, 0);
-	//usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][0], GREEN, 0);
-	//usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][0], GREEN, 0);
+
+	for(int drumN = 0; drumN < numDrums; drumN++)
+		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - numDrums + drumN + 1], YELLOW, 0);
+
+	usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][0], GREEN, 0);  // OSCIL 1
+
+	usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - numDrums + 1], GREEN, 0);  // DRUM 1
 }
 
 void MidiController::setOscilOnOff(int oscilNum, bool isOn)
@@ -144,6 +160,14 @@ void MidiController::setOscilOnOff(int oscilNum, bool isOn)
 		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][oscilNum], YELLOW, 0);
 }
 
+void MidiController::setDrumOnOff(int drumNum, bool isOn)
+{
+	if(isOn)
+		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - numDrums + drumNum + 1], GREEN, 0);
+	else
+		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - numDrums + drumNum + 1], YELLOW, 0);
+}
+
 void MidiController::setStepOnOff(uint8_t note, bool isOn)
 {
 	if(isOn)
@@ -152,15 +176,13 @@ void MidiController::setStepOnOff(uint8_t note, bool isOn)
 		usbMIDI.sendNoteOn(note, OFF, 0);
 }
 
-Fader_t MidiController::getFaderType(uint8_t note)
+FaderIdx_t MidiController::getFaderType(uint8_t note)
 {
-	Fader_t faderType = NULL_FADER_FUNCTION;
+	FaderIdx_t faderIdx;
 
-	if(note == 56)
-		faderType = MAIN_VOLUME;
-	else if(note >= 48 && note <= 53)
-		faderType = (Fader_t)( (note - 46) & 0xFF); // From (ENV_DELAY = 2) to (ENV_RELEASE = 7)
+	if(note >= 48 && note <= 56)
+		faderIdx = (FaderIdx_t)( (note - 48) & 0xFF); // From (FADER_0 = 0) to (FADER_8 = 8)
 
-	return faderType;
+	return faderIdx;
 }
 

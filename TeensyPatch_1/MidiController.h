@@ -12,10 +12,15 @@
 #include "Sequence.h"
 
 enum {OFF = 0x00, GREEN = 0x01, RED = 0x03, YELLOW = 0x05};
-typedef enum {NOTHING = 0, OSCIL_SELECT = 1, STEP_SELECT = 2} Selection_t; // Selection Type
-typedef enum {NULL_FADER_FUNCTION, MAIN_VOLUME,
+typedef enum {NOTHING = 0, OSCIL_SELECT = 1, DRUM_SELECT = 2, STEP_SELECT = 3} Selection_t; // Selection Type
+/*typedef enum {NULL_FADER_FUNCTION, MAIN_VOLUME,
 	ENV_DELAY,	ENV_ATTACK,		ENV_HOLD,
 	ENV_DECAY, 	ENV_SUSTAIN,	ENV_RELEASE} Fader_t;
+	*/
+typedef enum {
+	FADER_0,	FADER_1,	FADER_2,
+	FADER_3, 	FADER_4,	FADER_5,
+	FADER_6, 	FADER_7, 	FADER_8} FaderIdx_t;
 
 class MidiController {
 private:
@@ -32,6 +37,7 @@ private:
 	MIDILayout_t MidiLayout;
 
 	int numOscils;
+	int numDrums;
 public:
 	MidiController();
 	virtual ~MidiController();
@@ -40,11 +46,13 @@ public:
 	void blinkStep(int stepNum, int color, int prevColor);
 	Selection_t getSelectionType(uint8_t note);
 	int getOscilIndex(uint8_t note);
+	int getDrumIndex(uint8_t note);
 	int getSequencerStep(uint8_t note);
-	void drawInitPanel(int numOscils);
+	void drawInitPanel(int numOscils, int numDrums);
 	void setOscilOnOff(int oscilNum, bool isOn);
+	void setDrumOnOff(int drumNum, bool isOn);
 	void setStepOnOff(uint8_t note, bool isOn);
-	Fader_t getFaderType(uint8_t note);
+	FaderIdx_t getFaderType(uint8_t note);
 };
 
 #endif /* MIDICONTROLLER_H_ */

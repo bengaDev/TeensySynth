@@ -123,7 +123,7 @@ StateMachine.cpp.o: ..\StateMachine.cpp ..\StateMachine.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_wavetable.h \
  ..\NoteFeatures.h ..\Sequence.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dspinst.h \
- ..\MidiController.h \
+ ..\SequenceDrum.h ..\MidiController.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\cores\teensy3/usb_midi.h
 
 ..\StateMachine.h:
@@ -377,6 +377,8 @@ C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_wavet
 ..\Sequence.h:
 
 C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dspinst.h:
+
+..\SequenceDrum.h:
 
 ..\MidiController.h:
 
