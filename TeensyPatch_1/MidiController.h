@@ -48,6 +48,7 @@ public:
 	int getOscilIndex(uint8_t note);
 	int getDrumIndex(uint8_t note);
 	int getSequencerStep(uint8_t note);
+	uint8_t getSequencerStepMidiId(int stepNumber);
 	void drawInitPanel(int numOscils, int numDrums);
 	void setOscilOnOff(int oscilNum, bool isOn);
 	void setDrumOnOff(int drumNum, bool isOn);

@@ -136,6 +136,22 @@ int MidiController::getSequencerStep(uint8_t note)
 	return (stepNum % STEP_NUMBER);
 }
 
+uint8_t MidiController::getSequencerStepMidiId(int stepNumber)
+{
+	uint8_t stepID;
+
+	if(stepNumber >= 24 && stepNumber <= 31)
+		stepID = stepNumber - 24;
+	else if(stepNumber >= 16 && stepNumber <= 23)
+		stepID = stepNumber - 8;
+	else if(stepNumber >= 8 && stepNumber <= 15)
+		stepID = stepNumber + 8;
+	else if(stepNumber >= 0 && stepNumber <= 7)
+		stepID = stepNumber + 24;
+
+	return stepID;
+}
+
 void MidiController::drawInitPanel(int numOscils, int numDrums)
 {
 	this->numOscils = numOscils;

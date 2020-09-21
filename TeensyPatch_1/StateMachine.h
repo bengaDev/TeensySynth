@@ -43,6 +43,7 @@ private:
 
 	void processMidiCommand();
 	void InitPanel();
+	void refreshSequencer();
 	void InitProcessingComponents();
 	bool isClkTick();
 	void manageTimeEnvelope(FaderFunction_t, byte);

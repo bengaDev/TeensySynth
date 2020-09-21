@@ -282,6 +282,7 @@ void StateMachine::processMidiCommand()
 					  AkaiMidi.setOscilOnOff(currentOscil, true);
 					  currentMode = OSCIL_SELECTION_MODE;
 					  lastSelectionMode = OSCIL_SELECTION_MODE;
+					  refreshSequencer();
 					  break;
 				  case DRUM_SELECT:
 					  AkaiMidi.setOscilOnOff(currentOscil, false); // Turn off oscil selection
@@ -290,6 +291,7 @@ void StateMachine::processMidiCommand()
 					  AkaiMidi.setDrumOnOff(currentDrum, true);
 					  currentMode = DRUM_SELECTION_MODE;
 					  lastSelectionMode = DRUM_SELECTION_MODE;
+					  refreshSequencer();
 					  break;
 				  case STEP_SELECT:
 				  {
@@ -515,6 +517,36 @@ void StateMachine::InitPanel()
 	InitProcessingComponents();
 	AkaiMidi.drawInitPanel(numOscils, numDrums);
 	currentMode = OSCIL_SELECTION_MODE;
+}
+
+void StateMachine::refreshSequencer()
+{
+	uint8_t MIDINote;
+
+	if(lastSelectionMode == OSCIL_SELECTION_MODE)
+	{
+		for(int step = 0; step < STEP_NUMBER; step++)
+		{
+			MIDINote = AkaiMidi.getSequencerStepMidiId(step);
+
+			if(oscillator[currentOscil]->sequence.isStep_On(step))
+				AkaiMidi.setStepOnOff(MIDINote, true);
+			else
+				AkaiMidi.setStepOnOff(MIDINote, false);
+		}
+	}
+	else if(lastSelectionMode == DRUM_SELECTION_MODE)
+	{
+		for(int step = 0; step < STEP_NUMBER; step++)
+		{
+			MIDINote = AkaiMidi.getSequencerStepMidiId(step);
+
+			if(drum[currentDrum]->sequence.isStep_On(step))
+				AkaiMidi.setStepOnOff(MIDINote, true);
+			else
+				AkaiMidi.setStepOnOff(MIDINote, false);
+		}
+	}
 }
 
 float myMap(float num, float startScale_IN, float endScale_IN, float startScale_OUT, float endScale_OUT){
