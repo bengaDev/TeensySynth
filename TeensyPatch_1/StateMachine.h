@@ -10,6 +10,7 @@
 
 #include "SequenceOsc.h"
 #include "SequenceDrum.h"
+#include "SequenceKick.h"
 #include "MidiController.h"
 
 class StateMachine {
@@ -24,7 +25,8 @@ public:
 private:
 	SequenceOsc **oscillator;
 	SequenceDrum **drum;
-	int numOscils, numDrums;
+	SequenceKick *kick;
+	int numOscils, numDrums, numKicks;
 	MidiController AkaiMidi;
 
 	enum {INIT_MODE, OSCIL_SELECTION_MODE, DRUM_SELECTION_MODE, SEQUENCER_MODE, STEP_MODE}; // State Machine Mode
@@ -37,7 +39,7 @@ private:
 		DRUM_FREQ, DRUM_LENGTH, DRUM_PITCH_MOD
 	} FaderFunction_t;
 	int currentMode, lastSelectionMode;
-	int currentOscil, currentDrum;
+	int currentOscil, currentDrum, currentKick;
 
 	int step;
 

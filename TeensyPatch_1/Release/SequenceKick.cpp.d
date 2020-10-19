@@ -1,5 +1,4 @@
-StateMachine.cpp.o: ..\StateMachine.cpp ..\StateMachine.h \
- ..\SequenceOsc.h \
+SequenceKick.cpp.o: ..\SequenceKick.cpp ..\SequenceKick.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/Audio.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\cores\teensy3/DMAChannel.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\cores\teensy3/kinetis.h \
@@ -121,14 +120,11 @@ StateMachine.cpp.o: ..\StateMachine.cpp ..\StateMachine.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_simple_drum.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_pwm.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_wavetable.h \
- ..\NoteFeatures.h ..\Sequence.h \
+ ..\Sequence.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dspinst.h \
- ..\SequenceDrum.h ..\SequenceKick.h ..\MidiController.h \
- C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\cores\teensy3/usb_midi.h
+ ..\SequenceOsc.h ..\NoteFeatures.h
 
-..\StateMachine.h:
-
-..\SequenceOsc.h:
+..\SequenceKick.h:
 
 C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/Audio.h:
 
@@ -372,16 +368,10 @@ C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_pwm.h
 
 C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_wavetable.h:
 
-..\NoteFeatures.h:
-
 ..\Sequence.h:
 
 C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dspinst.h:
 
-..\SequenceDrum.h:
+..\SequenceOsc.h:
 
-..\SequenceKick.h:
-
-..\MidiController.h:
-
-C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\cores\teensy3/usb_midi.h:
+..\NoteFeatures.h:

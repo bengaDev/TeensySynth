@@ -9,12 +9,13 @@
 
 #define NUM_WAVES	3
 #define VOLUME		0.1
-#define BPM			130.0
+#define BPM			150.0
 #define SUSTAIN 	100 //ms
 #define BPM_DIV		4
 #define NUM_STEPS	16
 #define NUM_OSCILS	2
 #define NUM_DRUMS	2
+#define NUM_KICKS	2
 
 float BPM_ClkFreq = ((BPM * BPM_DIV) / 60.0);
 float BPM_ClkPeriod = (1 / (BPM_ClkFreq)) * 1000.0; // In 'ms'
@@ -39,6 +40,8 @@ SequenceDrum drums[NUM_DRUMS] = {
 		SequenceDrum()
 };
 
+SequenceKick kicks;
+
 
 AudioFilterStateVariable filter1;
 AudioAmplifier mainVolume;
@@ -47,6 +50,7 @@ AudioConnection patchCord0(oscil[0].envelope, 0, mixer1, 0);
 AudioConnection patchCord1(oscil[1].envelope, 0, mixer1, 1);
 AudioConnection patchCord2(drums[0].drum, 0, mixer2, 0);
 AudioConnection patchCord6(drums[1].drum, 0, mixer2, 1);
+AudioConnection patchCord666(*(static_cast<AudioStream*>(kicks.getKickAudioOut())), 0, mixer2, 2);
 AudioConnection patchCord3(mixer1, 0, filter1, 0);
 AudioConnection patchCord4(mixer1, 0, filter1, 1);
 AudioConnection patchCord5(filter1, 0, mixer2, 3);
@@ -70,9 +74,12 @@ StateMachine::StateMachine() {
 	// TODO Auto-generated constructor stub
 	this->numOscils = NUM_OSCILS;
 	this->numDrums = NUM_DRUMS;
+	this->numKicks = NUM_KICKS;
 
 	oscillator = (SequenceOsc**)malloc(numOscils * sizeof(SequenceOsc*));
 	drum = (SequenceDrum**)malloc(numDrums * sizeof(SequenceDrum*));
+
+	kick = &kicks;
 
 	for(int i = 0; i < numOscils; i++)
 	{
@@ -89,6 +96,7 @@ StateMachine::StateMachine() {
 
 	currentOscil = 0;
 	currentDrum = 0;
+	currentKick = 0;
 }
 
 StateMachine::~StateMachine() {
@@ -108,7 +116,10 @@ void StateMachine::updateStateMachine()
 	/*******************************************************/
 	// Oscillator Envelope Update
 	for(int i = 0; i < NUM_OSCILS; i++)
+	{
 		oscillator[i]->UpdateState();
+		kick->oscillatorTone.UpdateState();
+	}
 
 
 
@@ -163,6 +174,12 @@ void StateMachine::manageStep(int stepNumber)
 	{
 		if(drum[drumN]->sequence.isStep_On(stepNumber))
 			drum[drumN]->drumPlay();
+	}
+
+	for(int kickN = 0; kickN < NUM_KICKS; kickN++)
+	{
+		if(kick->oscillatorTone.sequence.isStep_On(stepNumber))
+			kick->notePlay();
 	}
 
 	updateStepLed(stepNumber/*, isStepOn*/);
@@ -508,6 +525,16 @@ void StateMachine::InitProcessingComponents()
 
 	drum2.frequency(500);
 	drum2.length(30);
+
+	kick->oscillatorTone.setDAHDSR(0.0,  5.0,  2.1,  31.4, 50,  0.6, 50.0);
+	kick->oscillatorTone.setAmplitude(1.0);
+	kick->oscillatorTone.setNote(C_2);
+	kick->oscillatorTone.setWaveformType(WAVEFORM_SINE);
+
+	kick->oscillatorTone.sequence.setSequenceStep(0);
+	kick->oscillatorTone.sequence.setSequenceStep(8);
+	kick->oscillatorTone.sequence.setSequenceStep(16);
+	kick->oscillatorTone.sequence.setSequenceStep(24);
 
 	filter1.frequency(400);
 }
