@@ -11,6 +11,7 @@
 #include <Audio.h>
 #include "Sequence.h"
 #include "SequenceOsc.h"
+#include "ShiftingSine.h"
 
 class SequenceKick {
 public:
@@ -20,6 +21,7 @@ public:
 	void notePlay();
 
 	SequenceOsc oscillatorTone;
+	ShiftingSine ss;
 	//SequenceOsc oscillatorClick;
 
 	//AudioSynthWaveform oscillatorTone;
