@@ -118,7 +118,7 @@ void StateMachine::updateStateMachine()
 	for(int i = 0; i < NUM_OSCILS; i++)
 	{
 		oscillator[i]->UpdateState();
-		kick->oscillatorTone.UpdateState();
+		//kick->oscillatorTone.UpdateState();
 	}
 
 
@@ -178,7 +178,7 @@ void StateMachine::manageStep(int stepNumber)
 
 	for(int kickN = 0; kickN < NUM_KICKS; kickN++)
 	{
-		if(kick->oscillatorTone.sequence.isStep_On(stepNumber))
+		if(kick->sequence.isStep_On(stepNumber))
 			kick->notePlay();
 	}
 
@@ -526,15 +526,14 @@ void StateMachine::InitProcessingComponents()
 	drum2.frequency(500);
 	drum2.length(30);
 
-	kick->oscillatorTone.setDAHDSR(0.0,  5.0,  2.1,  31.4, 50,  0.6, 50.0);
-	kick->oscillatorTone.setAmplitude(1.0);
-	kick->oscillatorTone.setNote(C_2);
-	kick->oscillatorTone.setWaveformType(WAVEFORM_SINE);
+	kick->setFreq(300.0);
+	kick->setLength(500);
+	kick->setMod(1.0);
 
-	kick->oscillatorTone.sequence.setSequenceStep(0);
-	kick->oscillatorTone.sequence.setSequenceStep(8);
-	kick->oscillatorTone.sequence.setSequenceStep(16);
-	kick->oscillatorTone.sequence.setSequenceStep(24);
+	kick->sequence.setSequenceStep(0);
+	//kick->sequence.setSequenceStep(8);
+	//kick->sequence.setSequenceStep(16);
+	//kick->sequence.setSequenceStep(24);
 
 	filter1.frequency(400);
 }

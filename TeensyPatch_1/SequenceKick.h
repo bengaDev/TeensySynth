@@ -17,11 +17,14 @@ class SequenceKick {
 public:
 	SequenceKick();
 	virtual ~SequenceKick();
-	AudioEffectEnvelope* getKickAudioOut();
+	AudioStream* getKickAudioOut();
 	void notePlay();
+	void setFreq(float freq);
+	void setLength(int32_t millis);
+	void setMod(float modAmount);
 
-	SequenceOsc oscillatorTone;
-	ShiftingSine ss;
+	//SequenceOsc oscillatorTone;
+	ShiftingSine shiftingSine;
 	//SequenceOsc oscillatorClick;
 
 	//AudioSynthWaveform oscillatorTone;

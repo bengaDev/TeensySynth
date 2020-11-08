@@ -123,7 +123,9 @@ StateMachine.cpp.o: ..\StateMachine.cpp ..\StateMachine.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_wavetable.h \
  ..\NoteFeatures.h ..\Sequence.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dspinst.h \
- ..\SequenceDrum.h ..\SequenceKick.h ..\MidiController.h \
+ ..\SequenceDrum.h ..\SequenceKick.h ..\ShiftingSine.h \
+ ..\DSP_Arithmetic/ExpLUT.c ..\DSP_Arithmetic/DSP_Utils.h \
+ ..\DSP_Arithmetic/LogLUT.c ..\MidiController.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\cores\teensy3/usb_midi.h
 
 ..\StateMachine.h:
@@ -381,6 +383,14 @@ C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dsp
 ..\SequenceDrum.h:
 
 ..\SequenceKick.h:
+
+..\ShiftingSine.h:
+
+..\DSP_Arithmetic/ExpLUT.c:
+
+..\DSP_Arithmetic/DSP_Utils.h:
+
+..\DSP_Arithmetic/LogLUT.c:
 
 ..\MidiController.h:
 

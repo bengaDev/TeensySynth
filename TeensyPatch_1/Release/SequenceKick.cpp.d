@@ -122,7 +122,9 @@ SequenceKick.cpp.o: ..\SequenceKick.cpp ..\SequenceKick.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/synth_wavetable.h \
  ..\Sequence.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dspinst.h \
- ..\SequenceOsc.h ..\NoteFeatures.h
+ ..\SequenceOsc.h ..\NoteFeatures.h ..\ShiftingSine.h \
+ ..\DSP_Arithmetic/ExpLUT.c ..\DSP_Arithmetic/DSP_Utils.h \
+ ..\DSP_Arithmetic/LogLUT.c
 
 ..\SequenceKick.h:
 
@@ -375,3 +377,11 @@ C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dsp
 ..\SequenceOsc.h:
 
 ..\NoteFeatures.h:
+
+..\ShiftingSine.h:
+
+..\DSP_Arithmetic/ExpLUT.c:
+
+..\DSP_Arithmetic/DSP_Utils.h:
+
+..\DSP_Arithmetic/LogLUT.c:

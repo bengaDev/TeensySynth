@@ -91,8 +91,9 @@ sloeber.ino.cpp.o: ..\sloeber.ino.cpp \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\libraries\Audio/utility/dspinst.h \
  ..\MidiController.h \
  C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\cores\teensy3/usb_midi.h \
- ..\StateMachine.h ..\SequenceDrum.h ..\SequenceKick.h \
- ..\TeensyPatch_1.ino
+ ..\StateMachine.h ..\SequenceDrum.h ..\SequenceKick.h ..\ShiftingSine.h \
+ ..\DSP_Arithmetic/ExpLUT.c ..\DSP_Arithmetic/DSP_Utils.h \
+ ..\DSP_Arithmetic/LogLUT.c ..\TeensyPatch_1.ino
 
 C:/Teensy_Patches/Workspace_try/TeensyPatch_1/Release/pch/Arduino.h:
 
@@ -287,5 +288,13 @@ C:\Program\ Files\ (x86)\Arduino\hardware\teensy\avr\cores\teensy3/usb_midi.h:
 ..\SequenceDrum.h:
 
 ..\SequenceKick.h:
+
+..\ShiftingSine.h:
+
+..\DSP_Arithmetic/ExpLUT.c:
+
+..\DSP_Arithmetic/DSP_Utils.h:
+
+..\DSP_Arithmetic/LogLUT.c:
 
 ..\TeensyPatch_1.ino:

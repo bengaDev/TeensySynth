@@ -7,11 +7,26 @@
 
 #include "ShiftingSine.h"
 
+extern "C" {
+extern const int16_t AudioWaveformSine[257];
+}
+
 ShiftingSine::ShiftingSine() : AudioStream(1, inputQueueArray)
 {
     length(600);
     targetFrequency(60);
     freqMod(0.5);
+}
+
+void ShiftingSine::noteOn(void)
+{
+	__disable_irq();
+
+	timeEnvCurrent = 0;
+	linearCurrentLUT_Idx = linearStartLUT_Idx;
+	phaseAccumulator = 0;
+
+	__enable_irq();
 }
 
 void ShiftingSine::length(int32_t milliseconds)
@@ -27,7 +42,7 @@ void ShiftingSine::length(int32_t milliseconds)
 
     // Calculates the amount of Time Envelope Decrement to apply at each clock cycle (where
     // 	clock has freq. Fs: the period corresponds to the time between one sample and another).
-    timeEnvDecrement = (ShiftingSine::TIME_ENV_INTERVALS/len_samples);
+    timeEnvIncrement = (ShiftingSine::TIME_ENV_INTERVALS/len_samples);
 
     // Total time envelope intervals are 0x80000000.
     // This value was chosen so that it makes future calculations easier and more efficient (this
@@ -55,23 +70,161 @@ void ShiftingSine::targetFrequency(float freq)
     // 		Ph_incr = (F_wave * (N / Fs))
 
     targetPhaseIncrement = (uint32_t)((freq * (PHASE_INCR_INTERVALS / AUDIO_SAMPLE_RATE_EXACT)) + 0.5);
+
+    Serial.print("targetPhaseIncrement");
+    Serial.println(targetPhaseIncrement);
+
+    FloatBits_t multiplier;
+    FloatBits_t logVal;
+
+    // -----------------------------------------------------------------------------------------
+    // MAX
+    // -----------------------------------------------------------------------------------------
+    multiplier.fValue = ((float)PHASE_INCR_MAX / (float)targetPhaseIncrement);
+
+    // 						| ------- Integer Part ------ |   | ------------------ Fractional Part ------------------- |
+    logVal.fValue = (float)((multiplier.bits >> 23) & 0x7F) + log_512[(multiplier.bits >> LOG_Q) & LOG_LUT_MASK].fValue;
+    logVal.fValue += 2.0;
+
+    if(logVal.fValue > 4.0)
+    	LINEAR_LUT_IDX_MAX = 0x80000000;
+    else
+    	LINEAR_LUT_IDX_MAX = (int)((logVal.fValue * (float)(1 << 29)) + 0.5);
+
+
+    // -----------------------------------------------------------------------------------------
+    // MIN
+    // -----------------------------------------------------------------------------------------
+    multiplier.fValue = ((float)PHASE_INCR_MIN / (float)targetPhaseIncrement);
+    // 						| ------- Integer Part ------ |   | ------------------ Fractional Part ------------------- |
+    logVal.fValue = (float)((multiplier.bits >> 23) & 0x7F) + log_512[(multiplier.bits >> LOG_Q) & LOG_LUT_MASK].fValue;
+    logVal.fValue += 2.0;
+
+    if(logVal.fValue < 0.0)
+    	LINEAR_LUT_IDX_MIN = 0x00000000;
+    else
+    	LINEAR_LUT_IDX_MIN = (int)((logVal.fValue * (float)(1 << 29)) + 0.5);
 }
 
 void ShiftingSine::freqMod(float depth)
 {
-	  // Validate parameter
-	  if(depth < 0)
-	    depth = 0;
-	  else if(depth > 1.0)
-	    depth = 1.0;
+	// Validate parameter
+	if(depth < 0.0)
+		depth = 0.0;
+	else if(depth > 4.0)
+		depth = 4.0;
 
-	  depth += 1.0;
+	roundingFactor = 0.5;
+	if(depth < 2.0)
+		roundingFactor = -0.5;
 
-	  // Turn 1.0 to 2.0 into a reasonable scale.
-	  // The scale that is chosen is to go up and down of 2 octaves.
-	  // Going up of 1 octave doubles frequency (and thus Phase Increment), going down of 1 octave halves it.
-	  // This means that the range will be [Ph_incr/4, Ph_incr*4].
-	  // The human ear perception of a frequency shift is logarithmic with base 2.
+	//IdxLUT = (int)((float)((depth * (float)(1 << 31)) >> 2) + 0.5);
+	linearStartLUT_Idx = (int)((depth * (float)(1 << 29)) + 0.5);
+
+	Serial.print("linearStartLUT_Idx: ");
+	Serial.print(linearStartLUT_Idx);
+	Serial.print(" -> [>>22]: ");
+	Serial.print(linearStartLUT_Idx >> 22);
+	Serial.print(" || Float: ");
+	Serial.println(exp_512[linearStartLUT_Idx >> 22].fValue);
+
+#warning Rivedere il calcolo del LINEAR_LUT_IDX_MAX/MIN
+	/*
+	if(linearStartLUT_Idx > LINEAR_LUT_IDX_MAX)
+		linearStartLUT_Idx = LINEAR_LUT_IDX_MAX;
+	else if(linearStartLUT_Idx < LINEAR_LUT_IDX_MIN)
+		linearStartLUT_Idx = LINEAR_LUT_IDX_MIN;
+	*/
+
+	linearCurrentLUT_Idx = linearStartLUT_Idx;
+
+	// Turn 0.0 to 4.0 into a phase increment difference (=frequency difference).
+	// The scale that is chosen is to go up and down of 2 octaves.
+	// Going up of 1 octave doubles frequency (and thus Phase Increment), going down of 1 octave halves it.
+	// This means that the range will be [Ph_incr/4, Ph_incr*4].
+	// The human ear perception of a frequency shift is logarithmic with base 2.
+	//startPhaseIncrement = targetPhaseIncrement * exp_512[(depth * EXP_LUT_FACTOR) + 0.5];
+	//startPhaseIncrement = targetPhaseIncrement * exp_512[linearCurrentLUT_Idx >> 22].fValue;
+
+	// Can be placed either here or in length function, depending on where it is most efficient (in the least used of the two methods)
+#warning Rivedere il segno e la formula: quando depth > 2.0, la frequenza deve scendere e quindi 'linearLUTIncrementDiff' dev' essere negativo
+	linearLUTIncrementDiff = (int32_t)( ((((float)linearCurrentLUT_Idx/(float)ShiftingSine::TIME_ENV_INTERVALS) - 1.0) * timeEnvIncrement) + roundingFactor);
+
+
+	Serial.print("linearLUTIncrementDiff: ");
+	Serial.println(linearLUTIncrementDiff);
+	/*
+	Serial.print("0x40000000/0x40000000 - 1 = ");
+	Serial.println((((float)linearCurrentLUT_Idx/(float)ShiftingSine::TIME_ENV_INTERVALS) - 1.0));
+
+	Serial.print("0x40000000/0x40000000 = ");
+	Serial.println(((float)linearCurrentLUT_Idx/(float)ShiftingSine::TIME_ENV_INTERVALS));
+
+	Serial.print("linearCurrentLUT_Idx = ");
+	Serial.println((float)linearCurrentLUT_Idx);
+
+	Serial.print("TIME_ENV_INTERVALS = ");
+	Serial.println((float)ShiftingSine::TIME_ENV_INTERVALS);
+	*/
+	//currentPhaseIncrement = startPhaseIncrement;
+}
+
+void ShiftingSine::update(void)
+{
+	audio_block_t *block_wav;
+	int16_t *p_wave, *end;
+	int32_t sin_l, sin_r, interp;
+	int32_t index, scale;
+
+	block_wav = allocate();
+	if (!block_wav) return;
+	p_wave = (block_wav->data);
+	end = p_wave + AUDIO_BLOCK_SAMPLES;
+
+	// 50 is arbitrary threshold...
+	// low values of second are inaudible, and we can save CPU cycles
+	// by not calculating second when it's really quiet.
+	//do_second = (wav_amplitude2 > 50);
+
+	while(p_wave < end)
+	{
+		// If time envelope has expired, it means that signal has reached its target frequency
+		if(timeEnvCurrent >= ShiftingSine::TIME_ENV_INTERVALS)
+		{
+			// If envelope has expired, then stuff zeros into output buffer.
+			*p_wave = 0;
+			p_wave++;
+		}
+		else
+		{
+			timeEnvCurrent += timeEnvIncrement;
+
+			linearCurrentLUT_Idx += linearLUTIncrementDiff;
+
+
+			currentPhaseIncrement = ((float)targetPhaseIncrement * exp_512[linearCurrentLUT_Idx >> 22].fValue);
+
+			phaseAccumulator += currentPhaseIncrement;
+			//phaseAccumulator &= 0xFFFFFFFF;
+
+			// Phase to Sine lookup * interp:
+			index = phaseAccumulator >> 24; // take top valid 8 bits
+			sin_l = AudioWaveformSine[index];
+			sin_r = AudioWaveformSine[index+1];
+
+			// Linear Interp
+			scale = (phaseAccumulator >> 8) & 0xFFFF;
+			sin_r *= scale;
+			sin_l *= 0x10000 - scale;
+			interp = sin_l + sin_r;
+
+			*p_wave = multiply_32x32_rshift32(interp, 32768);
+			p_wave++;
+		}
+	}
+
+	transmit(block_wav, 0);
+	release(block_wav);
 
 }
 
