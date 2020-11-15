@@ -15,7 +15,7 @@
 #define NUM_STEPS	16
 #define NUM_OSCILS	2
 #define NUM_DRUMS	2
-#define NUM_KICKS	2
+#define NUM_KICKS	1
 
 float BPM_ClkFreq = ((BPM * BPM_DIV) / 60.0);
 float BPM_ClkPeriod = (1 / (BPM_ClkFreq)) * 1000.0; // In 'ms'
@@ -40,7 +40,9 @@ SequenceDrum drums[NUM_DRUMS] = {
 		SequenceDrum()
 };
 
-SequenceKick kicks;
+SequenceKick kicks[NUM_KICKS] = {
+		SequenceKick()
+};
 
 
 AudioFilterStateVariable filter1;
@@ -50,7 +52,7 @@ AudioConnection patchCord0(oscil[0].envelope, 0, mixer1, 0);
 AudioConnection patchCord1(oscil[1].envelope, 0, mixer1, 1);
 AudioConnection patchCord2(drums[0].drum, 0, mixer2, 0);
 AudioConnection patchCord6(drums[1].drum, 0, mixer2, 1);
-AudioConnection patchCord666(*(static_cast<AudioStream*>(kicks.getKickAudioOut())), 0, mixer2, 2);
+AudioConnection patchCord666(*(static_cast<AudioStream*>(kicks[0].getKickAudioOut())), 0, mixer2, 2);
 AudioConnection patchCord3(mixer1, 0, filter1, 0);
 AudioConnection patchCord4(mixer1, 0, filter1, 1);
 AudioConnection patchCord5(filter1, 0, mixer2, 3);
@@ -78,8 +80,12 @@ StateMachine::StateMachine() {
 
 	oscillator = (SequenceOsc**)malloc(numOscils * sizeof(SequenceOsc*));
 	drum = (SequenceDrum**)malloc(numDrums * sizeof(SequenceDrum*));
+	kick = (SequenceKick**)malloc(numKicks * sizeof(SequenceKick*));
 
-	kick = &kicks;
+	for(int i = 0; i < numKicks; i++)
+	{
+		kick[i] = &(kicks[i]);
+	}
 
 	for(int i = 0; i < numOscils; i++)
 	{
@@ -103,6 +109,7 @@ StateMachine::~StateMachine() {
 	// TODO Auto-generated destructor stub
 	free(oscillator);
 	free(drum);
+	free(kick);
 }
 
 void StateMachine::updateStateMachine()
@@ -178,8 +185,8 @@ void StateMachine::manageStep(int stepNumber)
 
 	for(int kickN = 0; kickN < NUM_KICKS; kickN++)
 	{
-		if(kick->sequence.isStep_On(stepNumber))
-			kick->notePlay();
+		if(kick[kickN]->sequence.isStep_On(stepNumber))
+			kick[kickN]->notePlay();
 	}
 
 	updateStepLed(stepNumber/*, isStepOn*/);
@@ -213,6 +220,16 @@ void StateMachine::updateStepLed(int stepNum/*, bool *isStepOn*/) //TODO
 		}
 
 		if(drum[currentDrum]->sequence.isStep_On(stepNum)/*isStepOn[currentOscil]*/) //TODO
+			AkaiMidi.blinkStep(stepNum, RED, prevColor);
+		else
+			AkaiMidi.blinkStep(stepNum, YELLOW, prevColor);
+	}
+	else if(lastSelectionMode == KICK_SELECTION_MODE)
+	{
+		if(kick[currentKick]->sequence.isStep_On(prevStep))
+			prevColor = GREEN;
+
+		if(kick[currentKick]->sequence.isStep_On(stepNum))
 			AkaiMidi.blinkStep(stepNum, RED, prevColor);
 		else
 			AkaiMidi.blinkStep(stepNum, YELLOW, prevColor);
@@ -273,6 +290,27 @@ void StateMachine::manageDrumParams(FaderFunction_t fader, byte MIDIVal)
 	}
 }
 
+void StateMachine::manageKickParams(FaderFunction_t fader, byte MIDIVal)
+{
+	float kickParamFloat;
+
+	switch(fader)
+	{
+		case KICK_FREQ:
+			kickParamFloat = ((MIDIVal * 0.555662323) * (MIDIVal * 0.555662323)) + 20.0;//myMap((float)MIDIVal, 0.0, 127.0, 20.0, 5000.0);
+			kick[currentKick]->setFreq(kickParamFloat);
+			break;
+		case KICK_LENGTH:
+			kickParamFloat = myMap((float)MIDIVal, 0.0, 127.0, 20.0, 5000.0);
+			kick[currentKick]->setLength(kickParamFloat);
+			break;
+		case KICK_MOD_AMOUNT:
+			kickParamFloat = myMap((float)MIDIVal, 0.0, 127.0, 0.0, 4.0);
+			kick[currentKick]->setMod(kickParamFloat);
+			break;
+	}
+}
+
 void StateMachine::processMidiCommand()
 {
 	  byte type, channel, data1, data2, cable;
@@ -295,6 +333,7 @@ void StateMachine::processMidiCommand()
 				  case OSCIL_SELECT:
 					  AkaiMidi.setDrumOnOff(currentDrum, false); // Turn off drum selection
 					  AkaiMidi.setOscilOnOff(currentOscil, false);
+					  AkaiMidi.setKickOnOff(currentKick, false);
 					  currentOscil = AkaiMidi.getOscilIndex(data1);
 					  AkaiMidi.setOscilOnOff(currentOscil, true);
 					  currentMode = OSCIL_SELECTION_MODE;
@@ -304,10 +343,21 @@ void StateMachine::processMidiCommand()
 				  case DRUM_SELECT:
 					  AkaiMidi.setOscilOnOff(currentOscil, false); // Turn off oscil selection
 					  AkaiMidi.setDrumOnOff(currentDrum, false);
+					  AkaiMidi.setKickOnOff(currentKick, false);
 					  currentDrum = AkaiMidi.getDrumIndex(data1);
 					  AkaiMidi.setDrumOnOff(currentDrum, true);
 					  currentMode = DRUM_SELECTION_MODE;
 					  lastSelectionMode = DRUM_SELECTION_MODE;
+					  refreshSequencer();
+					  break;
+				  case KICK_SELECT:
+					  AkaiMidi.setOscilOnOff(currentOscil, false); // Turn off oscil selection
+					  AkaiMidi.setDrumOnOff(currentDrum, false);
+					  AkaiMidi.setKickOnOff(currentKick, false);
+					  currentKick = AkaiMidi.getKickIndex(data1);
+					  AkaiMidi.setKickOnOff(currentKick, true);
+					  currentMode = KICK_SELECTION_MODE;
+					  lastSelectionMode = KICK_SELECTION_MODE;
 					  refreshSequencer();
 					  break;
 				  case STEP_SELECT:
@@ -326,6 +376,14 @@ void StateMachine::processMidiCommand()
 					  {
 						  drum[currentDrum]->sequence.setSequenceStep(stepNum);
 						  if(drum[currentDrum]->sequence.isStep_On(stepNum))
+							  AkaiMidi.setStepOnOff(data1, true);
+						  else
+							  AkaiMidi.setStepOnOff(data1, false);
+					  }
+					  else if(lastSelectionMode == KICK_SELECTION_MODE)
+					  {
+						  kick[currentKick]->sequence.setSequenceStep(stepNum);
+						  if(kick[currentKick]->sequence.isStep_On(stepNum))
 							  AkaiMidi.setStepOnOff(data1, true);
 						  else
 							  AkaiMidi.setStepOnOff(data1, false);
@@ -362,6 +420,9 @@ void StateMachine::processMidiCommand()
 			  	  break;
 		  	  case DRUM_FREQ ... DRUM_PITCH_MOD:
 			  	  manageDrumParams(faderFunction, data2);
+			  	  break;
+		  	  case KICK_FREQ ... KICK_MOD_AMOUNT:
+			  	  manageKickParams(faderFunction, data2);
 			  	  break;
 		  	  case NULL_FADER_FUNCTION:
 		  		  break;
@@ -503,6 +564,11 @@ int StateMachine::translateFaderIdxToFunction(FaderIdx_t faderIdx)
 		if(faderIdx >= FADER_0 && faderIdx <= FADER_2)
 			faderFunction = (FaderFunction_t)(faderIdx + 8); // Ex.:	FADER_0 (Idx=0) -> DRUM_FREQ (Idx=8)
 	}
+	else if(lastSelectionMode == KICK_SELECTION_MODE)
+	{
+		if(faderIdx >= FADER_0 && faderIdx <= FADER_2)
+			faderFunction = (FaderFunction_t)(faderIdx + 11);
+	}
 	return faderFunction;
 }
 
@@ -526,11 +592,11 @@ void StateMachine::InitProcessingComponents()
 	drum2.frequency(500);
 	drum2.length(30);
 
-	kick->setFreq(300.0);
-	kick->setLength(500);
-	kick->setMod(1.0);
+	kick[0]->setFreq(200.0);
+	kick[0]->setLength(500);
+	kick[0]->setMod(3.0);
 
-	kick->sequence.setSequenceStep(0);
+	//kick->sequence.setSequenceStep(0);
 	//kick->sequence.setSequenceStep(8);
 	//kick->sequence.setSequenceStep(16);
 	//kick->sequence.setSequenceStep(24);
@@ -541,7 +607,7 @@ void StateMachine::InitProcessingComponents()
 void StateMachine::InitPanel()
 {
 	InitProcessingComponents();
-	AkaiMidi.drawInitPanel(numOscils, numDrums);
+	AkaiMidi.drawInitPanel(numOscils, numDrums, numKicks);
 	currentMode = OSCIL_SELECTION_MODE;
 }
 
@@ -568,6 +634,18 @@ void StateMachine::refreshSequencer()
 			MIDINote = AkaiMidi.getSequencerStepMidiId(step);
 
 			if(drum[currentDrum]->sequence.isStep_On(step))
+				AkaiMidi.setStepOnOff(MIDINote, true);
+			else
+				AkaiMidi.setStepOnOff(MIDINote, false);
+		}
+	}
+	else if(lastSelectionMode == KICK_SELECTION_MODE)
+	{
+		for(int step = 0; step < STEP_NUMBER; step++)
+		{
+			MIDINote = AkaiMidi.getSequencerStepMidiId(step);
+
+			if(kick[currentKick]->sequence.isStep_On(step))
 				AkaiMidi.setStepOnOff(MIDINote, true);
 			else
 				AkaiMidi.setStepOnOff(MIDINote, false);

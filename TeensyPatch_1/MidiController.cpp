@@ -76,6 +76,8 @@ Selection_t MidiController::getSelectionType(uint8_t note)
 		selType = OSCIL_SELECT;
 	else if(note >= MidiLayout.mainPanelID[0][7 - numDrums + 1] && note <= MidiLayout.mainPanelID[0][7])
 		selType = DRUM_SELECT;
+	else if(note >= MidiLayout.mainPanelID[0][7 - 2 - numKicks + 1] && note <= MidiLayout.mainPanelID[0][7 - 2])
+		selType = KICK_SELECT;
 	else if(note >= MidiLayout.mainPanelID[sequencerRow + (STEP_NUMBER / 8) - 1][0] && note <= MidiLayout.mainPanelID[sequencerRow][7])
 		selType = STEP_SELECT;
 /*
@@ -120,6 +122,19 @@ int MidiController::getDrumIndex(uint8_t note)
 	return drumIndex;
 }
 
+int MidiController::getKickIndex(uint8_t note)
+{
+	int kickIndex = -1;
+
+	for(int kickN = 0; kickN < numKicks; kickN++)
+	{
+		if(note == MidiLayout.mainPanelID[0][7 - 2 - numKicks + kickN + 1])
+			kickIndex = kickN;
+	}
+
+	return kickIndex;
+}
+
 int MidiController::getSequencerStep(uint8_t note)
 {
 	int stepNum = -1;
@@ -152,16 +167,20 @@ uint8_t MidiController::getSequencerStepMidiId(int stepNumber)
 	return stepID;
 }
 
-void MidiController::drawInitPanel(int numOscils, int numDrums)
+void MidiController::drawInitPanel(int numOscils, int numDrums, int numKicks)
 {
 	this->numOscils = numOscils;
 	this->numDrums = numDrums;
+	this->numKicks = numKicks;
 
 	for(int oscilN = 0; oscilN < numOscils; oscilN++)
 		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][oscilN], YELLOW, 0);
 
 	for(int drumN = 0; drumN < numDrums; drumN++)
 		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - numDrums + drumN + 1], YELLOW, 0);
+
+	for(int kickN = 0; kickN < numKicks; kickN++)
+		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - 2 - numKicks + kickN + 1], YELLOW, 0);
 
 	usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][0], GREEN, 0);  // OSCIL 1
 
@@ -182,6 +201,14 @@ void MidiController::setDrumOnOff(int drumNum, bool isOn)
 		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - numDrums + drumNum + 1], GREEN, 0);
 	else
 		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - numDrums + drumNum + 1], YELLOW, 0);
+}
+
+void MidiController::setKickOnOff(int kickNum, bool isOn)
+{
+	if(isOn)
+		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - 2 - numKicks + kickNum + 1], GREEN, 0);
+	else
+		usbMIDI.sendNoteOn(MidiLayout.mainPanelID[0][7 - 2 - numKicks + kickNum + 1], YELLOW, 0);
 }
 
 void MidiController::setStepOnOff(uint8_t note, bool isOn)

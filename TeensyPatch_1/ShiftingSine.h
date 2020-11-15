@@ -31,6 +31,8 @@ private:
 
 	  uint32_t timeEnvCurrent;
 	  uint32_t timeEnvIncrement;
+	  uint32_t timeEnvSqr_Norm; // This is the current time env value divided by 0x8000=32768. (Used for Gain)
+	  uint32_t gain;
 	  uint32_t targetPhaseIncrement;
 	  uint32_t currentPhaseIncrement;
 	  uint32_t phaseAccumulator;

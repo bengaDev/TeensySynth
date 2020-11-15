@@ -13,6 +13,7 @@ extern const int16_t AudioWaveformSine[257];
 
 ShiftingSine::ShiftingSine() : AudioStream(1, inputQueueArray)
 {
+	timeEnvCurrent = ShiftingSine::TIME_ENV_INTERVALS + 1;
     length(600);
     targetFrequency(60);
     freqMod(0.5);
@@ -82,11 +83,14 @@ void ShiftingSine::targetFrequency(float freq)
     // -----------------------------------------------------------------------------------------
     multiplier.fValue = ((float)PHASE_INCR_MAX / (float)targetPhaseIncrement);
 
-    // 						| ------- Integer Part ------ |   | ------------------ Fractional Part ------------------- |
-    logVal.fValue = (float)((multiplier.bits >> 23) & 0x7F) + log_512[(multiplier.bits >> LOG_Q) & LOG_LUT_MASK].fValue;
-    logVal.fValue += 2.0;
+    // 						| ------ Integer Part ------ |   | ------------------ Fractional Part ------------------- |
+    logVal.fValue = (float)((multiplier.bits >> 23) - 127) + log_512[(multiplier.bits >> LOG_Q) & LOG_LUT_MASK].fValue;
+    Serial.println(logVal.fValue);
 
-    if(logVal.fValue > 4.0)
+    //logVal.fValue += 2.0;
+
+    //if(logVal.fValue > 4.0)
+    if(logVal.fValue > 2.0)
     	LINEAR_LUT_IDX_MAX = 0x80000000;
     else
     	LINEAR_LUT_IDX_MAX = (int)((logVal.fValue * (float)(1 << 29)) + 0.5);
@@ -96,11 +100,14 @@ void ShiftingSine::targetFrequency(float freq)
     // MIN
     // -----------------------------------------------------------------------------------------
     multiplier.fValue = ((float)PHASE_INCR_MIN / (float)targetPhaseIncrement);
-    // 						| ------- Integer Part ------ |   | ------------------ Fractional Part ------------------- |
-    logVal.fValue = (float)((multiplier.bits >> 23) & 0x7F) + log_512[(multiplier.bits >> LOG_Q) & LOG_LUT_MASK].fValue;
-    logVal.fValue += 2.0;
 
-    if(logVal.fValue < 0.0)
+    // 						| ------- Integer Part ------ |   | ------------------ Fractional Part ------------------- |
+    logVal.fValue = ((float)((multiplier.bits >> 23) & 0xFF) - 127.0) + log_512[(multiplier.bits >> LOG_Q) & LOG_LUT_MASK].fValue;
+
+    //logVal.fValue += 2.0;
+
+    //if(logVal.fValue < 0.0)
+    if(logVal.fValue < -2.0)
     	LINEAR_LUT_IDX_MIN = 0x00000000;
     else
     	LINEAR_LUT_IDX_MIN = (int)((logVal.fValue * (float)(1 << 29)) + 0.5);
@@ -118,23 +125,15 @@ void ShiftingSine::freqMod(float depth)
 	if(depth < 2.0)
 		roundingFactor = -0.5;
 
+	// depth : 4.0 = x : 0x80000000 	-> 	x = (depth * 0x80000000) / 4.0
 	//IdxLUT = (int)((float)((depth * (float)(1 << 31)) >> 2) + 0.5);
 	linearStartLUT_Idx = (int)((depth * (float)(1 << 29)) + 0.5);
 
-	Serial.print("linearStartLUT_Idx: ");
-	Serial.print(linearStartLUT_Idx);
-	Serial.print(" -> [>>22]: ");
-	Serial.print(linearStartLUT_Idx >> 22);
-	Serial.print(" || Float: ");
-	Serial.println(exp_512[linearStartLUT_Idx >> 22].fValue);
-
-#warning Rivedere il calcolo del LINEAR_LUT_IDX_MAX/MIN
-	/*
 	if(linearStartLUT_Idx > LINEAR_LUT_IDX_MAX)
 		linearStartLUT_Idx = LINEAR_LUT_IDX_MAX;
 	else if(linearStartLUT_Idx < LINEAR_LUT_IDX_MIN)
 		linearStartLUT_Idx = LINEAR_LUT_IDX_MIN;
-	*/
+
 
 	linearCurrentLUT_Idx = linearStartLUT_Idx;
 
@@ -147,8 +146,7 @@ void ShiftingSine::freqMod(float depth)
 	//startPhaseIncrement = targetPhaseIncrement * exp_512[linearCurrentLUT_Idx >> 22].fValue;
 
 	// Can be placed either here or in length function, depending on where it is most efficient (in the least used of the two methods)
-#warning Rivedere il segno e la formula: quando depth > 2.0, la frequenza deve scendere e quindi 'linearLUTIncrementDiff' dev' essere negativo
-	linearLUTIncrementDiff = (int32_t)( ((((float)linearCurrentLUT_Idx/(float)ShiftingSine::TIME_ENV_INTERVALS) - 1.0) * timeEnvIncrement) + roundingFactor);
+	linearLUTIncrementDiff = (int32_t)( ( (1.0 - ((float)linearCurrentLUT_Idx/(float)ShiftingSine::TIME_ENV_INTERVALS)) * timeEnvIncrement) + roundingFactor);
 
 
 	Serial.print("linearLUTIncrementDiff: ");
@@ -199,6 +197,13 @@ void ShiftingSine::update(void)
 		{
 			timeEnvCurrent += timeEnvIncrement;
 
+			//if(timeEnvCurrent >= ShiftingSine::TIME_ENV_INTERVALS)
+				//timeEnvCurrent = ShiftingSine::TIME_ENV_INTERVALS;
+
+			timeEnvSqr_Norm = (timeEnvCurrent >> 15);
+			timeEnvSqr_Norm *= timeEnvSqr_Norm;
+			gain = ((ShiftingSine::TIME_ENV_INTERVALS - timeEnvSqr_Norm) >> 15);
+
 			linearCurrentLUT_Idx += linearLUTIncrementDiff;
 
 
@@ -218,7 +223,7 @@ void ShiftingSine::update(void)
 			sin_l *= 0x10000 - scale;
 			interp = sin_l + sin_r;
 
-			*p_wave = multiply_32x32_rshift32(interp, 32768);
+			*p_wave = multiply_32x32_rshift32(interp, gain);
 			p_wave++;
 		}
 	}

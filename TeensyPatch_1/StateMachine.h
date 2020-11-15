@@ -25,18 +25,20 @@ public:
 private:
 	SequenceOsc **oscillator;
 	SequenceDrum **drum;
-	SequenceKick *kick;
+	SequenceKick **kick;
 	int numOscils, numDrums, numKicks;
 	MidiController AkaiMidi;
 
-	enum {INIT_MODE, OSCIL_SELECTION_MODE, DRUM_SELECTION_MODE, SEQUENCER_MODE, STEP_MODE}; // State Machine Mode
+	enum {INIT_MODE, OSCIL_SELECTION_MODE, DRUM_SELECTION_MODE, KICK_SELECTION_MODE, SEQUENCER_MODE, STEP_MODE}; // State Machine Mode
 	typedef enum{	NULL_FADER_FUNCTION,
 		MAIN_VOLUME,
 
 		ENV_DELAY,	ENV_ATTACK,		ENV_HOLD,
 		ENV_DECAY, 	ENV_SUSTAIN,	ENV_RELEASE,
 
-		DRUM_FREQ, DRUM_LENGTH, DRUM_PITCH_MOD
+		DRUM_FREQ, DRUM_LENGTH, DRUM_PITCH_MOD,
+
+		KICK_FREQ, KICK_LENGTH, KICK_MOD_AMOUNT
 	} FaderFunction_t;
 	int currentMode, lastSelectionMode;
 	int currentOscil, currentDrum, currentKick;
@@ -50,6 +52,7 @@ private:
 	bool isClkTick();
 	void manageTimeEnvelope(FaderFunction_t, byte);
 	void manageDrumParams(FaderFunction_t, byte);
+	void manageKickParams(FaderFunction_t, byte);
 	int translateFaderIdxToFunction(FaderIdx_t);
 };
 
