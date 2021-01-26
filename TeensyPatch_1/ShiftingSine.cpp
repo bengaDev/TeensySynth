@@ -72,9 +72,6 @@ void ShiftingSine::targetFrequency(float freq)
 
     targetPhaseIncrement = (uint32_t)((freq * (PHASE_INCR_INTERVALS / AUDIO_SAMPLE_RATE_EXACT)) + 0.5);
 
-    Serial.print("targetPhaseIncrement");
-    Serial.println(targetPhaseIncrement);
-
     FloatBits_t multiplier;
     FloatBits_t logVal;
 
@@ -93,7 +90,7 @@ void ShiftingSine::targetFrequency(float freq)
     if(logVal.fValue > 2.0)
     	LINEAR_LUT_IDX_MAX = 0x80000000;
     else
-    	LINEAR_LUT_IDX_MAX = (int)((logVal.fValue * (float)(1 << 29)) + 0.5);
+    	LINEAR_LUT_IDX_MAX = (uint32_t)((logVal.fValue * (float)(1 << 29)) + 0.5);
 
 
     // -----------------------------------------------------------------------------------------
@@ -110,7 +107,7 @@ void ShiftingSine::targetFrequency(float freq)
     if(logVal.fValue < -2.0)
     	LINEAR_LUT_IDX_MIN = 0x00000000;
     else
-    	LINEAR_LUT_IDX_MIN = (int)((logVal.fValue * (float)(1 << 29)) + 0.5);
+    	LINEAR_LUT_IDX_MIN = (uint32_t)((logVal.fValue * (float)(1 << 29)) + 0.5);
 }
 
 void ShiftingSine::freqMod(float depth)
@@ -127,12 +124,24 @@ void ShiftingSine::freqMod(float depth)
 
 	// depth : 4.0 = x : 0x80000000 	-> 	x = (depth * 0x80000000) / 4.0
 	//IdxLUT = (int)((float)((depth * (float)(1 << 31)) >> 2) + 0.5);
-	linearStartLUT_Idx = (int)((depth * (float)(1 << 29)) + 0.5);
+	linearStartLUT_Idx = (uint32_t)((depth * (float)(1 << 29)) + 0.5);
 
+	Serial.println("Inside MOD:");
 	if(linearStartLUT_Idx > LINEAR_LUT_IDX_MAX)
+	{
+		Serial.print("	linearStartLUT_Idx GREATER: ");
+		Serial.println(linearStartLUT_Idx, HEX);
 		linearStartLUT_Idx = LINEAR_LUT_IDX_MAX;
+	}
 	else if(linearStartLUT_Idx < LINEAR_LUT_IDX_MIN)
+	{
+		Serial.print("	linearStartLUT_Idx = ");
+		Serial.print(linearStartLUT_Idx, HEX);
+		Serial.print(" SMALLER than LINEAR_LUT_IDX_MIN = ");
+		Serial.print(LINEAR_LUT_IDX_MIN, HEX);
+		Serial.println(LINEAR_LUT_IDX_MIN, DEC);
 		linearStartLUT_Idx = LINEAR_LUT_IDX_MIN;
+	}
 
 
 	linearCurrentLUT_Idx = linearStartLUT_Idx;
@@ -149,7 +158,7 @@ void ShiftingSine::freqMod(float depth)
 	linearLUTIncrementDiff = (int32_t)( ( (1.0 - ((float)linearCurrentLUT_Idx/(float)ShiftingSine::TIME_ENV_INTERVALS)) * timeEnvIncrement) + roundingFactor);
 
 
-	Serial.print("linearLUTIncrementDiff: ");
+	Serial.print("	linearLUTIncrementDiff: ");
 	Serial.println(linearLUTIncrementDiff);
 	/*
 	Serial.print("0x40000000/0x40000000 - 1 = ");
@@ -197,8 +206,8 @@ void ShiftingSine::update(void)
 		{
 			timeEnvCurrent += timeEnvIncrement;
 
-			//if(timeEnvCurrent >= ShiftingSine::TIME_ENV_INTERVALS)
-				//timeEnvCurrent = ShiftingSine::TIME_ENV_INTERVALS;
+			if(timeEnvCurrent >= ShiftingSine::TIME_ENV_INTERVALS)
+				timeEnvCurrent = ShiftingSine::TIME_ENV_INTERVALS;
 
 			timeEnvSqr_Norm = (timeEnvCurrent >> 15);
 			timeEnvSqr_Norm *= timeEnvSqr_Norm;
