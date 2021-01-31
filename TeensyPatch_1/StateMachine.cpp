@@ -69,10 +69,11 @@ AudioConnection patchCord37(mainVolume, 0, mixerRight, 0);
 AudioConnection patchCord41(mixerLeft, 0, audioOut, 0);
 AudioConnection patchCord42(mixerRight, 0, audioOut, 1);
 
-
+bool DebugActive;
 float myMap(float num, float startScale_IN, float endScale_IN, float startScale_OUT, float endScale_OUT);
 
 StateMachine::StateMachine() {
+	DebugActive = false;
 	// TODO Auto-generated constructor stub
 	this->numOscils = NUM_OSCILS;
 	this->numDrums = NUM_DRUMS;
@@ -400,6 +401,12 @@ void StateMachine::processMidiCommand()
 		  {
 			  if(data1 == 127 && data2 == 62) // Initialization Sequence
 				  InitPanel();
+		  }
+
+		  if(data1 == 55)
+		  {
+			  if(DebugActive == true){DebugActive = false;}
+			  else{DebugActive = true;}
 		  }
 	  }
 	  if(type == usbMIDI.ControlChange)

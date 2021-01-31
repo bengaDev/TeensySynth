@@ -20,7 +20,7 @@ public:
 	AudioStream* getKickAudioOut();
 	void notePlay();
 	void setFreq(float freq);
-	void setLength(int32_t millis);
+	void setLength(float millis);
 	void setMod(float modAmount);
 
 	//SequenceOsc oscillatorTone;

@@ -33,7 +33,7 @@ void SequenceKick::setFreq(float freq)
 	shiftingSine.targetFrequency(freq);
 }
 
-void SequenceKick::setLength(int32_t millis)
+void SequenceKick::setLength(float millis)
 {
 	shiftingSine.length(millis);
 }

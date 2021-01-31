@@ -19,7 +19,7 @@ public:
 
 	void noteOn();
 	void targetFrequency(float freq);
-	void length(int32_t milliseconds);
+	void length(float milliseconds);
 	void freqMod(float depth);
 
 	using AudioStream::release;
@@ -38,12 +38,12 @@ private:
 	  uint32_t phaseAccumulator;
 
 	  // Linear Phase variables
-	  int32_t linearLUTIncrementDiff;
-	  uint32_t linearCurrentLUT_Idx;
-	  uint32_t linearStartLUT_Idx;
+	  int32_t linearMultiplierIncrementDiff;
+	  uint32_t linearCurrentMultiplier;
+	  uint32_t linearStartMultiplier;
 
-	  uint32_t LINEAR_LUT_IDX_MAX;// = (uint32_t)((20000.0 * (PHASE_INCR_INTERVALS / AUDIO_SAMPLE_RATE_EXACT)) + 0.5);
-	  uint32_t LINEAR_LUT_IDX_MIN;// = (uint32_t)((40.0 * (PHASE_INCR_INTERVALS / AUDIO_SAMPLE_RATE_EXACT)) + 0.5);
+	  uint32_t LINEAR_MULTIPLIER_MAX;// = (uint32_t)((20000.0 * (PHASE_INCR_INTERVALS / AUDIO_SAMPLE_RATE_EXACT)) + 0.5);
+	  uint32_t LINEAR_MULTIPLIER_MIN;// = (uint32_t)((40.0 * (PHASE_INCR_INTERVALS / AUDIO_SAMPLE_RATE_EXACT)) + 0.5);
 
 	  //uint32_t lowerPhaseIncrement, higherPhaseIncrement;
 	  uint32_t phaseIncrementDiffTotal;

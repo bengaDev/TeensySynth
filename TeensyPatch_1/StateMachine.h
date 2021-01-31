@@ -13,6 +13,8 @@
 #include "SequenceKick.h"
 #include "MidiController.h"
 
+extern bool DebugActive;
+
 class StateMachine {
 public:
 	StateMachine();
